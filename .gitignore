@@ -1,0 +1,69 @@
+# =========== ОБЩИЕ ПРАВИЛА ===========
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-*
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Логи
+*.log
+logs/
+
+# Временные файлы
+*.tmp
+*.temp
+
+# =========== БЕКЕНД ===========
+
+# Node.js
+node_modules/
+npm-debug.log*
+
+# TypeScript сборка
+dist/
+build/
+out/
+
+# Environment
+.env
+.env.local
+.env*.local
+
+# Базы данных (локальные)
+*.db
+*.sqlite
+*.sqlite3
+
+# Coverage
+coverage/
+.nyc_output/
+
+# =========== ФРОНТЕНД ===========
+
+# React/Vue/Next.js build
+.next/
+.nuxt/
+.cache/
+
+# Статика
+public/static
+public/build
+
+# Parcel
+.cache/
+.parcel-cache/
+
+# Gatsby
+.cache/
+public
+
+# Svelte
+.svelte-kit/
+/build/
