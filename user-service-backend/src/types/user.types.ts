@@ -20,7 +20,7 @@ export interface CreateUserInput {
   firstName: string;
   lastName: string;
   middleName?: string;
-  birthDate: Date | string;
+  birthDate: Date;
   email: string;
   password: string;
   role?: "admin" | "user";
@@ -31,7 +31,7 @@ export interface UpdateUserInput {
   firstName?: string;
   lastName?: string;
   middleName?: string | null;
-  birthDate?: Date | string;
+  birthDate?: Date;
   email?: string;
   password?: string;
   isActive?: boolean;
