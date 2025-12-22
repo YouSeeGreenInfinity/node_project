@@ -274,3 +274,9 @@ PUT /api/users/:id → Обновление пользователя
 PATCH /api/users/:id/block → Блокировка/разблокировка
 PATCH /api/users/:id/password → Смена пароля
 DELETE /api/users/:id → Удаление пользователя (admin)
+
+новые технологии:
+
+swagger - (изначально — OpenAPI Specification) — спецификация для описания REST API. Это машиночитаемый и человекочитаемый файл, в котором подробно указано, какие есть конечные точки (эндпоинты), какие методы используются (GET, POST и т. д.), какие параметры и заголовки принимает запрос, и какой ответ вернёт сервер.
+
+joi npm - "The most powerful schema description language and data validator for JavaScript."
