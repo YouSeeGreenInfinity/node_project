@@ -1,6 +1,6 @@
 import express, { Application, Request, Response, NextFunction } from "express";
 import cors from "cors";
-import helmet from "helmet";
+// import helmet from "helmet";
 import morgan from "morgan";
 // Middleware для обработки ошибок (используются ниже)
 import {
@@ -24,7 +24,7 @@ class App {
 
   constructor() {
     this.app = express();
-    this.port = process.env.PORT || 3000;
+    this.port = process.env.PORT || 3001;
     this.environment = process.env.NODE_ENV || "development";
 
     this.initializeDatabase();
@@ -51,10 +51,10 @@ class App {
 
   private initializeMiddlewares(): void {
     // Базовые middleware
-    this.app.use(helmet()); // Безопасность заголовков
+    // this.app.use(helmet()); // Безопасность заголовков
     this.app.use(
       cors({
-        origin: process.env.CORS_ORIGIN || "*",
+        origin: "http://localhost:3000",
         credentials: true,
       })
     );
