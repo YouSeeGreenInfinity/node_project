@@ -47,10 +47,15 @@ export interface ChangePasswordData {
   newPassword: string;
 }
 
-// Ответ от API при авторизации/регистрации
+// Как на сервере
 export interface AuthResponse {
-  token: string;
-  user: SafeUser;
+  success: boolean;
+  message: string;
+  data: {
+    user: SafeUser; // Используем SafeUser, но учтите, что сервер может присылать не все поля (см. ниже)
+    token: string;
+    expiresIn: number | string;
+  };
 }
 
 // Для блокировки пользователя

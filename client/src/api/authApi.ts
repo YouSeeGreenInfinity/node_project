@@ -9,19 +9,68 @@ import {
   BlockUserResponse
 } from '../types/user';
 
+
+const handleApiError = (error: any): Promise<never> => {
+  console.error('API Error:', error);
+  
+  let errorMessage = 'Произошла неизвестная ошибка';
+  
+  if (error.response) {
+    // Сервер ответил с ошибкой
+    const { data, status } = error.response;
+    console.error('Server error response:', { status, data });
+    
+    errorMessage = data?.message || data?.error || `Ошибка сервера: ${status}`;
+  } else if (error.request) {
+    // Запрос был сделан, но ответа нет
+    console.error('No response received:', error.request);
+    errorMessage = 'Нет ответа от сервера. Проверьте подключение к интернету.';
+  } else {
+    // Что-то пошло не так при настройке запроса
+    console.error('Request setup error:', error.message);
+    errorMessage = `Ошибка запроса: ${error.message}`;
+  }
+  
+  // Возвращаем отклоненный Promise
+  return Promise.reject(new Error(errorMessage));
+};
+
+
 export const authApi = {
   // Регистрация
-  register: (data: RegisterData): Promise<AuthResponse> =>
-    apiClient.post('/api/auth/register', {
-      ...data,
-      birthDate: data.birthDate.toISOString().split('T')[0] // Форматируем дату
-    }).then(res => {
-      if (res.data.token) {
-        localStorage.setItem('token', res.data.token);
-        localStorage.setItem('user', JSON.stringify(res.data.user));
+  register: async (data: RegisterData): Promise<AuthResponse> => {
+    try {
+      const requestData = {
+        ...data,
+        birthDate: data.birthDate.toISOString().split('T')[0]
+      };
+      
+      console.log('📤 Sending registration request for:', data.email);
+      
+      const response = await apiClient.post('/api/auth/register', requestData);
+      
+      console.log('✅ Registration successful:', response.data);
+      
+      if (response.data.token && response.data.user) {
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
       }
-      return res.data;
-    }),
+      
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ Registration failed with error:', error);
+      console.error('❌ Error response:', error.response?.data);
+      
+      // Извлекаем сообщение об ошибке
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.error || 
+                          error.message || 
+                          'Ошибка регистрации';
+      
+      console.log('❌ Throwing error:', errorMessage);
+      throw new Error(errorMessage);
+    }
+  },
 
   // Авторизация
   login: (data: LoginData): Promise<AuthResponse> =>
@@ -57,8 +106,9 @@ export const authApi = {
     apiClient.get('/api/users').then(res => res.data),
 
   // Блокировка/разблокировка пользователя
-  toggleBlock: (id: number): Promise<BlockUserResponse> =>
-    apiClient.patch(`/api/users/${id}/block`).then(res => res.data),
+  // Принимаем isActive: true (разблокировать) или false (заблокировать)
+  toggleBlock: (id: number, isActive: boolean): Promise<BlockUserResponse> =>
+    apiClient.patch(`/api/users/${id}/block`, { isActive }).then(res => res.data),
 
   // Выход
   logout: () => {

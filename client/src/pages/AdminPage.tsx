@@ -4,7 +4,7 @@ import {
   Typography,
   Alert,
   Snackbar,
-  CircularProgress,
+  // CircularProgress, // Не использовался
 } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { fetchUsers, toggleBlockUser } from '../store/slices/usersSlice';
@@ -33,23 +33,34 @@ const AdminPage: React.FC = () => {
 
   const handleBlockUser = async (userId: number) => {
     try {
-      await dispatch(toggleBlockUser(userId)).unwrap();
+      // ИСПРАВЛЕНИЕ: Находим пользователя в стейте, чтобы узнать его текущий статус
+      const userToUpdate = users.find(u => u.id === userId);
+      
+      if (!userToUpdate) {
+          throw new Error("Пользователь не найден в списке");
+      }
+
+      // Передаем объект { id, isActive } в thunk
+      await dispatch(toggleBlockUser({ 
+          id: userId, 
+          isActive: !userToUpdate.isActive // Инвертируем текущий статус
+      })).unwrap();
+
       setNotification({
         open: true,
-        message: 'Статус пользователя изменен',
+        message: `Пользователь ${userToUpdate.isActive ? 'заблокирован' : 'разблокирован'}`,
         type: 'success',
       });
     } catch (err: any) {
       setNotification({
         open: true,
-        message: err || 'Ошибка изменения статуса',
+        message: err.message || err || 'Ошибка изменения статуса',
         type: 'error',
       });
     }
   };
 
   const handleEditUser = (userId: number) => {
-    // Здесь можно реализовать модальное окно редактирования
     console.log('Edit user:', userId);
   };
 

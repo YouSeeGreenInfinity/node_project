@@ -102,12 +102,18 @@ User.init(
           msg: "Некорректная дата рождения",
           args: true,
         },
-        isBefore: {
-          msg: "Дата рождения не может быть в будущем",
-          args: new Date().toISOString().split("T")[0],
+        isNotFuture(value: string) {
+          const date = new Date(value);
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+
+          if (date > today) {
+            throw new Error("Дата рождения не может быть в будущем");
+          }
         },
       },
     },
+
     email: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -179,7 +185,7 @@ User.init(
         fields: ["isActive"],
       },
     ],
-  },
+  }
 );
 
 export default User;

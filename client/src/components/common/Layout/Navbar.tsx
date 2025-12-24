@@ -15,8 +15,6 @@ import {
 } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { logout } from '@/store/slices/authSlice';
-// import { useAppDispatch, useAppSelector } from '../../store/hooks';
-// import { logout } from '../../store/slices/authSlice';
 
 const Navbar: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -49,14 +47,21 @@ const Navbar: React.FC = () => {
     handleMenuClose();
   };
 
+  // ИСПРАВЛЕННАЯ ФУНКЦИЯ: БЕЗОПАСНОЕ ПОЛУЧЕНИЕ ИНИЦИАЛОВ
   const getInitials = () => {
     if (!user) return '';
-    return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
+    // Используем опциональную цепочку и fallback для защиты от undefined/null
+    const first = user.firstName?.charAt(0) || '';
+    const last = user.lastName?.charAt(0) || '';
+    return `${first}${last}`.toUpperCase();
   };
 
+  // ИСПРАВЛЕННАЯ ФУНКЦИЯ: БЕЗОПАСНОЕ ПОЛУЧЕНИЕ ИМЕНИ
   const getFullName = () => {
     if (!user) return '';
-    return `${user.lastName} ${user.firstName}`;
+    const first = user.firstName || '';
+    const last = user.lastName || '';
+    return `${last} ${first}`.trim();
   };
 
   return (

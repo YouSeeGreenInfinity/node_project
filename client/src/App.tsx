@@ -94,7 +94,8 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return <>{children}</>;
 };
 
-function AppRoutes() {
+// Основные маршруты приложения
+const AppRoutes: React.FC = () => {
   return (
     <AuthInitializer>
       <Routes>
@@ -130,7 +131,7 @@ function AppRoutes() {
       </Routes>
     </AuthInitializer>
   );
-}
+};
 
 function App() {
   return (

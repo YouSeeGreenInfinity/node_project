@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import {
   Container,
@@ -8,38 +8,87 @@ import {
   Link,
   Alert,
   CircularProgress,
+  Snackbar,
 } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { register, clearError } from '../store/slices/authSlice';
+import { register, clearError, clearSuccess } from '../store/slices/authSlice';
 import RegisterForm from '../components/auth/RegisterForm';
 import { RegisterData } from '../types/user';
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { user, isLoading, error } = useAppSelector((state) => state.auth);
+  const { isLoading, error, success } = useAppSelector((state) => state.auth);
+  
+  const [openSuccessSnackbar, setOpenSuccessSnackbar] = useState(false);
+  const [openErrorSnackbar, setOpenErrorSnackbar] = useState(false);
 
+  // Обработка успешной регистрации
   useEffect(() => {
-    if (user) {
-      navigate('/profile');
+    if (success) {
+      console.log('🟢 Success detected, scheduling redirect');
+      setOpenSuccessSnackbar(true);
+      
+      // Даем пользователю 1.5 секунды прочитать сообщение об успехе перед редиректом
+      const timer = setTimeout(() => {
+        dispatch(clearSuccess());
+        // Если после регистрации сразу выдается токен (авто-логин), идем в профиль
+        navigate('/profile'); 
+        // Если токен не выдается и нужно логиниться руками, замените на navigate('/login');
+      }, 1500);
+
+      return () => clearTimeout(timer);
     }
-  }, [user, navigate]);
+  }, [success, dispatch, navigate]);
 
+  // Обработка ошибок
   useEffect(() => {
-    // Очищаем ошибку при размонтировании
+    if (error) {
+      console.log('🔴 Error detected:', error);
+      setOpenErrorSnackbar(true);
+    }
+  }, [error]);
+
+  // Очистка при размонтировании
+  useEffect(() => {
     return () => {
       dispatch(clearError());
+      dispatch(clearSuccess());
     };
   }, [dispatch]);
 
   const handleSubmit = async (data: RegisterData) => {
+    // Очищаем предыдущие состояния
+    dispatch(clearError());
+    dispatch(clearSuccess());
+    
+    // Отправляем запрос
     await dispatch(register(data));
   };
 
-  if (isLoading && !error) {
+  const handleCloseErrorSnackbar = () => {
+    setOpenErrorSnackbar(false);
+    dispatch(clearError());
+  };
+
+  const handleCloseSuccessSnackbar = () => {
+    setOpenSuccessSnackbar(false);
+  };
+
+  if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        minHeight: '100vh',
+        flexDirection: 'column',
+        gap: 2
+      }}>
         <CircularProgress />
+        <Typography variant="body2" color="text.secondary">
+          Регистрация...
+        </Typography>
       </Box>
     );
   }
@@ -61,6 +110,7 @@ const RegisterPage: React.FC = () => {
             p: 4,
             width: '100%',
             borderRadius: 2,
+            position: 'relative',
           }}
         >
           <Typography component="h1" variant="h5" align="center" gutterBottom>
@@ -71,6 +121,7 @@ const RegisterPage: React.FC = () => {
             Заполните все поля для создания учетной записи
           </Typography>
 
+          {/* Инлайн-алерт для ошибок, которые не исчезают сами */}
           {error && (
             <Alert 
               severity="error" 
@@ -78,6 +129,16 @@ const RegisterPage: React.FC = () => {
               onClose={() => dispatch(clearError())}
             >
               {error}
+            </Alert>
+          )}
+
+          {/* Инлайн-алерт успеха */}
+          {success && (
+            <Alert 
+              severity="success" 
+              sx={{ mb: 2 }}
+            >
+              {success} Перенаправление...
             </Alert>
           )}
 
@@ -93,7 +154,8 @@ const RegisterPage: React.FC = () => {
                 component={RouterLink}
                 to="/login"
                 variant="body2"
-                sx={{ fontWeight: 'medium' }}
+                sx={{ fontWeight: 'medium', textDecoration: 'none' }}
+                color="primary"
               >
                 Войти в систему
               </Link>
@@ -106,6 +168,7 @@ const RegisterPage: React.FC = () => {
               to="/"
               variant="body2"
               color="text.secondary"
+              sx={{ textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
             >
               Вернуться на главную
             </Link>
@@ -118,6 +181,37 @@ const RegisterPage: React.FC = () => {
           </Typography>
         </Box>
       </Box>
+
+      {/* Всплывающее уведомление об ошибке */}
+      <Snackbar
+        open={openErrorSnackbar}
+        autoHideDuration={6000}
+        onClose={handleCloseErrorSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={handleCloseErrorSnackbar} 
+          severity="error"
+          sx={{ width: '100%' }}
+        >
+          {error}
+        </Alert>
+      </Snackbar>
+
+      {/* Всплывающее уведомление об успехе */}
+      <Snackbar
+        open={openSuccessSnackbar}
+        autoHideDuration={3000}
+        onClose={handleCloseSuccessSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          severity="success"
+          sx={{ width: '100%' }}
+        >
+          Регистрация успешна!
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

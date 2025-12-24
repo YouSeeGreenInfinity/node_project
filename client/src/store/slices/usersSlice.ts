@@ -61,10 +61,13 @@ export const updateUser = createAsyncThunk(
 
 export const toggleBlockUser = createAsyncThunk(
   'users/toggleBlock',
-  async (userId: number, { rejectWithValue }) => {
+  // Принимаем { id, isActive }
+  async ({ id, isActive }: { id: number; isActive: boolean }, { rejectWithValue }) => {
     try {
-      const response = await authApi.toggleBlock(userId);
-      return { userId, isActive: response.isActive };
+      // Передаем оба параметра в API
+      const response = await authApi.toggleBlock(id, isActive);
+      // Возвращаем то, что нужно для reducer'а
+      return { userId: id, isActive: response.isActive };
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.message || 'Ошибка блокировки пользователя'
