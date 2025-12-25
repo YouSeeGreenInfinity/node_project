@@ -16,17 +16,30 @@ const initialState: UsersState = {
   error: null,
 };
 
+// Вспомогательная функция, чтобы ВЫЖАТЬ строку из любой ошибки
+const getErrorString = (error: any): string => {
+  if (typeof error === 'string') return error;
+  if (error?.response?.data?.message) return error.response.data.message;
+  if (error?.message) return error.message;
+  return 'Неизвестная ошибка';
+};
+
 // Асинхронные thunks
+
 export const fetchUsers = createAsyncThunk(
   'users/fetchUsers',
   async (_, { rejectWithValue }) => {
     try {
       const users = await authApi.getUsers();
+      // Проверка формата на случай, если бэк шлет { rows: ... }
+      if (!Array.isArray(users) && (users as any).rows) {
+          return (users as any).rows;
+      }
       return users;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || 'Ошибка загрузки пользователей'
-      );
+      // ВОТ ЗДЕСЬ БЫЛА ОШИБКА. Мы передавали весь объект error.
+      // Теперь передаем только строку.
+      return rejectWithValue(getErrorString(error));
     }
   }
 );
@@ -38,9 +51,7 @@ export const fetchUserById = createAsyncThunk(
       const user = await authApi.getUserById(userId);
       return user;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || 'Ошибка загрузки пользователя'
-      );
+      return rejectWithValue(getErrorString(error));
     }
   }
 );
@@ -52,26 +63,21 @@ export const updateUser = createAsyncThunk(
       const user = await authApi.updateUser(id, data);
       return user;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || 'Ошибка обновления пользователя'
-      );
+      return rejectWithValue(getErrorString(error));
     }
   }
 );
 
 export const toggleBlockUser = createAsyncThunk(
   'users/toggleBlock',
-  // Принимаем { id, isActive }
   async ({ id, isActive }: { id: number; isActive: boolean }, { rejectWithValue }) => {
     try {
-      // Передаем оба параметра в API
       const response = await authApi.toggleBlock(id, isActive);
-      // Возвращаем то, что нужно для reducer'а
-      return { userId: id, isActive: response.isActive };
+      // Если сервер вернул обновленного юзера, берем isActive оттуда, иначе используем отправленное
+      const newStatus = response?.isActive ?? isActive;
+      return { userId: id, isActive: newStatus };
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || 'Ошибка блокировки пользователя'
-      );
+      return rejectWithValue(getErrorString(error));
     }
   }
 );
@@ -94,13 +100,14 @@ const usersSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(fetchUsers.fulfilled, (state, action: PayloadAction<SafeUser[]>) => {
+      .addCase(fetchUsers.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.users = action.payload;
+        state.users = action.payload as SafeUser[];
       })
       .addCase(fetchUsers.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload as string;
+        // Теперь здесь точно будет строка
+        state.error = action.payload as string || 'Ошибка загрузки пользователей';
       })
       
       // Fetch User By ID
@@ -108,9 +115,9 @@ const usersSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(fetchUserById.fulfilled, (state, action: PayloadAction<SafeUser>) => {
+      .addCase(fetchUserById.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.currentUser = action.payload;
+        state.currentUser = action.payload as SafeUser;
       })
       .addCase(fetchUserById.rejected, (state, action) => {
         state.isLoading = false;
@@ -122,13 +129,12 @@ const usersSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(updateUser.fulfilled, (state, action: PayloadAction<SafeUser>) => {
+      .addCase(updateUser.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.currentUser = action.payload;
-        // Обновляем пользователя в списке
+        state.currentUser = action.payload as SafeUser;
         state.users = state.users.map(user =>
           user.id === action.payload.id ? action.payload : user
-        );
+        ) as SafeUser[];
       })
       .addCase(updateUser.rejected, (state, action) => {
         state.isLoading = false;
@@ -141,13 +147,11 @@ const usersSlice = createSlice({
       })
       .addCase(toggleBlockUser.fulfilled, (state, action) => {
         state.isLoading = false;
-        // Обновляем статус в списке пользователей
         state.users = state.users.map(user =>
           user.id === action.payload.userId
             ? { ...user, isActive: action.payload.isActive }
             : user
         );
-        // Обновляем текущего пользователя если это он
         if (state.currentUser?.id === action.payload.userId) {
           state.currentUser = {
             ...state.currentUser,

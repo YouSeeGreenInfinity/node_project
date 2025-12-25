@@ -21,7 +21,7 @@ import {
 import {
   Edit as EditIcon,
   Block as BlockIcon,
-  CheckCircle as ActiveIcon,
+  CheckCircle as ActiveIcon, // Добавил иконку для разблокировки
   Search as SearchIcon,
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
@@ -119,9 +119,12 @@ const UserList: React.FC<UserListProps> = ({
             sx={{ width: 300 }}
           />
           <Tooltip title="Обновить">
-            <IconButton onClick={onRefresh} disabled={isLoading}>
-              <RefreshIcon />
-            </IconButton>
+            {/* Обернули в span на всякий случай, если кнопка будет disabled */}
+            <span>
+              <IconButton onClick={onRefresh} disabled={isLoading}>
+                <RefreshIcon />
+              </IconButton>
+            </span>
           </Tooltip>
         </Box>
       </Box>
@@ -196,22 +199,36 @@ const UserList: React.FC<UserListProps> = ({
                             </IconButton>
                           </Tooltip>
                         )}
+
+                        {/* --- ИСПРАВЛЕННЫЙ БЛОК БЛОКИРОВКИ --- */}
                         <Tooltip
-                          title={user.isActive ? 'Заблокировать' : 'Разблокировать'}
+                          title={
+                            user.role === 'admin' 
+                              ? "Нельзя заблокировать администратора" 
+                              : user.isActive ? 'Заблокировать' : 'Разблокировать'
+                          }
                         >
-                          <IconButton
-                            size="small"
-                            onClick={() => handleBlockUser(user.id)}
-                            disabled={blockingUserId === user.id}
-                            color={user.isActive ? 'warning' : 'success'}
-                          >
-                            {blockingUserId === user.id ? (
-                              <CircularProgress size={20} />
-                            ) : (
-                              <BlockIcon fontSize="small" />
-                            )}
-                          </IconButton>
+                          {/* Span нужен, чтобы Tooltip работал даже на disabled кнопке */}
+                          <span>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleBlockUser(user.id)}
+                              // Блокируем кнопку, если идет загрузка ИЛИ если это админ
+                              disabled={blockingUserId === user.id || user.role === 'admin'}
+                              color={user.isActive ? 'warning' : 'success'}
+                            >
+                                {blockingUserId === user.id ? (
+                                  <CircularProgress size={20} />
+                                ) : user.isActive ? (
+                                  <BlockIcon fontSize="small" />
+                                ) : (
+                                  <ActiveIcon fontSize="small" />
+                                )}
+                            </IconButton>
+                          </span>
                         </Tooltip>
+                        {/* ------------------------------------- */}
+                        
                       </Box>
                     </TableCell>
                   </TableRow>

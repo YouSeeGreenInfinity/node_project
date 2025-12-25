@@ -46,26 +46,66 @@ const initialState: AuthState = {
 };
 
 // Утилита для извлечения сообщения об ошибке
+// authSlice.ts
+
+// const getErrorMessage = (error: any): string => {
+//   // 1. Проверяем ответ сервера
+//   if (error?.response?.data) {
+//     const data = error.response.data; // Здесь лежит { success: false, message: "..." }
+
+//     // Наш сервер возвращает "message" - это то, что видит юзер
+//     if (data.message) {
+//       return data.message;
+//     }
+//   }
+
+//   // 2. Если вдруг axios не вернул response, а просто message
+//   if (error?.message) return error.message;
+
+//   return 'Произошла неизвестная ошибка';
+// };
+
+// authSlice.ts
+
 const getErrorMessage = (error: any): string => {
+  console.log('🔍 Analyzing error:', error); // Посмотрим в консоли, что пришло
+
+  // 1. Проверяем ответ сервера
   if (error?.response?.data) {
-    const data = error.response.data;
+    const data = error.response.data; 
+    console.log('🔍 Server Data:', data);
+
+    // Если message есть и оно не пустое!
+    if (data.message && typeof data.message === 'string' && data.message.trim() !== '') {
+      return data.message;
+    }
     
-    // Обработка разных форматов ошибок
-    if (typeof data === 'string') return data;
-    if (data.message) return data.message;
-    if (data.error) return data.error;
-    if (data.errors && Array.isArray(data.errors)) {
-      return data.errors.map((err: any) => 
-        typeof err === 'string' ? err : err.message || JSON.stringify(err)
-      ).join(', ');
+    // Если error есть и оно не пустое
+    if (data.error && typeof data.error === 'string' && data.error.trim() !== '') {
+      return data.error;
     }
   }
-  
+
+  // 2. Если есть статус код, но нет сообщения - придумываем свое
+  if (error?.response?.status === 401) {
+      return "Неверный email или пароль (401)";
+  }
+  if (error?.response?.status === 403) {
+      return "Доступ запрещен (403)";
+  }
+  if (error?.response?.status === 404) {
+      return "Сервер не найден (404)";
+  }
+
+  // 3. Fallback: JS ошибка
   if (error?.message) return error.message;
-  if (typeof error === 'string') return error;
-  
-  return 'Произошла неизвестная ошибка';
+
+  // 4. Самый крайний случай
+  return 'Неизвестная ошибка (текст не найден)';
 };
+
+
+
 
 // Регистрация
 export const register = createAsyncThunk(
@@ -92,12 +132,18 @@ export const login = createAsyncThunk(
     try {
       console.log('🔄 [authSlice] login thunk starting for:', credentials.email);
       const response = await authApi.login(credentials);
-      console.log('✅ [authSlice] login thunk success for:', credentials.email);
+      console.log('✅ [authSlice] login thunk success');
       return response;
     } catch (error: any) {
       console.error('❌ [authSlice] login thunk caught error:', error);
-      const errorMessage = getErrorMessage(error);
-      return rejectWithValue(errorMessage);
+      
+      // Явно вызываем нашу функцию
+      const message = getErrorMessage(error);
+      
+      console.log('❌ [authSlice] Extracted error message:', message);
+      
+      // ВАЖНО: Обязательно return rejectWithValue!
+      return rejectWithValue(message);
     }
   }
 );

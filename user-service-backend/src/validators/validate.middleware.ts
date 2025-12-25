@@ -30,7 +30,7 @@ export const validateBody =
       return res.status(400).json(errorResponse);
     }
 
-    // Заменяем body на валидированные данные
+    // Body обычно можно перезаписывать, но для единообразия лучше так
     req.body = value;
     next();
   };
@@ -64,7 +64,14 @@ export const validateQuery =
       return res.status(400).json(errorResponse);
     }
 
-    req.query = value;
+    // ИСПРАВЛЕНИЕ: Вместо перезаписи ссылки, обновляем объект
+    // Сначала очищаем старые ключи (если нужно, чтобы stripUnknown работал на уровне объекта)
+    for (const key in req.query) {
+      delete req.query[key];
+    }
+    // Затем копируем валидированные данные
+    Object.assign(req.query, value);
+
     next();
   };
 
@@ -97,7 +104,14 @@ export const validateParams =
       return res.status(400).json(errorResponse);
     }
 
-    req.params = value;
+    // ИСПРАВЛЕНИЕ: То же самое для params
+    // params в express обычно тоже readonly ссылка
+    // Однако Express сам парсит params до middleware.
+    // Если Joi трансформирует типы (строка "1" -> число 1), это важно.
+
+    // Но params в req это Proxy в некоторых версиях, поэтому Object.assign безопаснее.
+    Object.assign(req.params, value);
+
     next();
   };
 
