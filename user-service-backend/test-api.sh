@@ -3,14 +3,12 @@
 echo "🧪 Тестирование User Service API"
 echo "================================="
 
-# Цвета для вывода
 GREEN='\033[0;32m'
 RED='\033[0;31m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
 BASE_URL="http://localhost:3000"
 
-# Функция для проверки ответа
 check_response() {
   local response="$1"
   local expected_status="$2"
@@ -50,7 +48,6 @@ REGISTER_RESPONSE=$(curl -s -X POST "$BASE_URL/api/auth/register" \
 
 check_response "$REGISTER_RESPONSE" "true" "User registration"
 
-# Извлекаем данные из ответа
 USER_ID=$(echo "$REGISTER_RESPONSE" | grep -o '"id":[0-9]*' | cut -d':' -f2)
 TOKEN=$(echo "$REGISTER_RESPONSE" | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
 
@@ -67,7 +64,6 @@ LOGIN_RESPONSE=$(curl -s -X POST "$BASE_URL/api/auth/login" \
 
 check_response "$LOGIN_RESPONSE" "true" "User login"
 
-# Обновляем токен из логина
 TOKEN=$(echo "$LOGIN_RESPONSE" | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
 
 echo ""

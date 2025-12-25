@@ -3,7 +3,6 @@ import { authApi } from '../../api/authApi';
 import { AuthResponse, LoginData, RegisterData, SafeUser } from '../../types/user';
 import { AuthResponse as ApiAuthResponse } from '../../types/user';
 
-// Используем тип SafeUser, который у вас уже есть
 interface AuthState {
   user: SafeUser | null;
   token: string | null;
@@ -12,7 +11,6 @@ interface AuthState {
   success: string | null;
 }
 
-// БЕЗОПАСНОЕ получение данных из localStorage
 const getStoredToken = (): string | null => {
   try {
     const token = localStorage.getItem('token');
@@ -32,7 +30,7 @@ const getStoredUser = (): SafeUser | null => {
     return JSON.parse(userData);
   } catch (error) {
     console.error('Error reading user from localStorage:', error);
-    localStorage.removeItem('user'); // Удаляем поврежденные данные
+    localStorage.removeItem('user');
     return null;
   }
 };
@@ -45,48 +43,22 @@ const initialState: AuthState = {
   success: null,
 };
 
-// Утилита для извлечения сообщения об ошибке
-// authSlice.ts
-
-// const getErrorMessage = (error: any): string => {
-//   // 1. Проверяем ответ сервера
-//   if (error?.response?.data) {
-//     const data = error.response.data; // Здесь лежит { success: false, message: "..." }
-
-//     // Наш сервер возвращает "message" - это то, что видит юзер
-//     if (data.message) {
-//       return data.message;
-//     }
-//   }
-
-//   // 2. Если вдруг axios не вернул response, а просто message
-//   if (error?.message) return error.message;
-
-//   return 'Произошла неизвестная ошибка';
-// };
-
-// authSlice.ts
-
 const getErrorMessage = (error: any): string => {
-  console.log('🔍 Analyzing error:', error); // Посмотрим в консоли, что пришло
+  console.log('🔍 Analyzing error:', error);
 
-  // 1. Проверяем ответ сервера
   if (error?.response?.data) {
     const data = error.response.data; 
     console.log('🔍 Server Data:', data);
 
-    // Если message есть и оно не пустое!
     if (data.message && typeof data.message === 'string' && data.message.trim() !== '') {
       return data.message;
     }
     
-    // Если error есть и оно не пустое
     if (data.error && typeof data.error === 'string' && data.error.trim() !== '') {
       return data.error;
     }
   }
 
-  // 2. Если есть статус код, но нет сообщения - придумываем свое
   if (error?.response?.status === 401) {
       return "Неверный email или пароль (401)";
   }
@@ -97,17 +69,14 @@ const getErrorMessage = (error: any): string => {
       return "Сервер не найден (404)";
   }
 
-  // 3. Fallback: JS ошибка
   if (error?.message) return error.message;
 
-  // 4. Самый крайний случай
   return 'Неизвестная ошибка (текст не найден)';
 };
 
 
 
 
-// Регистрация
 export const register = createAsyncThunk(
   'auth/register',
   async (userData: RegisterData, { rejectWithValue }) => {
@@ -125,7 +94,6 @@ export const register = createAsyncThunk(
   }
 );
 
-// Авторизация
 export const login = createAsyncThunk(
   'auth/login',
   async (credentials: LoginData, { rejectWithValue }) => {
@@ -137,12 +105,10 @@ export const login = createAsyncThunk(
     } catch (error: any) {
       console.error('❌ [authSlice] login thunk caught error:', error);
       
-      // Явно вызываем нашу функцию
       const message = getErrorMessage(error);
       
       console.log('❌ [authSlice] Extracted error message:', message);
       
-      // ВАЖНО: Обязательно return rejectWithValue!
       return rejectWithValue(message);
     }
   }
@@ -158,7 +124,6 @@ export const getMe = createAsyncThunk(
       console.error('❌ [authSlice] getMe API error:', error);
       const errorMessage = getErrorMessage(error);
       
-      // При ошибке авторизации сбрасываем состояние
       if (error.response?.status === 401) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
@@ -198,7 +163,6 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Register
       .addCase(register.pending, (state) => {
         console.log('⏳ [authSlice] register.pending');
         state.isLoading = true;
@@ -207,12 +171,8 @@ const authSlice = createSlice({
       })
       .addCase(register.fulfilled, (state, action: PayloadAction<AuthResponse>) => {
         state.isLoading = false;
-        // Теперь TypeScript знает, что user и token лежат внутри data
         const { user, token } = action.payload.data; 
-        
-        // Поскольку сервер возвращает урезанного пользователя (без birthDate и т.д.),
-        // а стейт ожидает полного SafeUser, нужно либо привести тип, либо хранить то, что есть.
-        // Для простоты приводим тип (но лучше доработать бэкенд, чтобы он возвращал всё).
+
         state.user = user as unknown as SafeUser; 
         state.token = token;
         
@@ -233,7 +193,6 @@ const authSlice = createSlice({
         state.error = action.payload as string || 'Ошибка регистрации';
       })
       
-      // Login
       .addCase(login.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -243,7 +202,6 @@ const authSlice = createSlice({
         console.log('✅ [authSlice] login.fulfilled payload:', action.payload);
         state.isLoading = false;
         
-        // ВАЖНО: Доступ через .data
         const responseData = action.payload.data || action.payload;
 
         state.user = responseData.user as unknown as SafeUser;
@@ -268,13 +226,11 @@ const authSlice = createSlice({
         }
       })
       
-      // GetMe
       .addCase(getMe.pending, (state) => {
         state.isLoading = true;
       })
       .addCase(getMe.fulfilled, (state, action: PayloadAction<SafeUser>) => {
         state.isLoading = false;
-        // Здесь user приходит напрямую, так как getMe возвращает SafeUser
         state.user = action.payload;
         try {
           localStorage.setItem('user', JSON.stringify(action.payload));
@@ -285,7 +241,6 @@ const authSlice = createSlice({
       .addCase(getMe.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
-        // При ошибке получения данных сбрасываем авторизацию
         if (action.payload === 'Ошибка получения данных пользователя') {
           state.user = null;
           state.token = null;

@@ -1,0 +1,27 @@
+{
+  "name": "5",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "install-all": "npm install && npm install --prefix user-service-backend && npm install --prefix client",
+    "db:reset": "npm run db --prefix user-service-backend",
+    "dev": "concurrently \"npm run dev --prefix user-service-backend\" \"npm run dev --prefix client\"",
+    "start:clean": "npm run db:reset && npm run dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YouSeeGreenInfinity/node_project.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/YouSeeGreenInfinity/node_project/issues"
+  },
+  "homepage": "https://github.com/YouSeeGreenInfinity/node_project#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

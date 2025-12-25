@@ -1,10 +1,7 @@
-// src/validators/user.validator.ts
 import Joi from "joi";
 import { UpdateUserInput, ChangePasswordInput } from "../types/user.types";
 
-/**
- * Схема валидации для обновления пользователя
- */
+
 export const updateUserSchema = Joi.object<UpdateUserInput>({
   firstName: Joi.string().min(2).max(50).optional().messages({
     "string.min": "Имя должно содержать минимум 2 символа",
@@ -42,9 +39,6 @@ export const updateUserSchema = Joi.object<UpdateUserInput>({
   }),
 });
 
-/**
- * Схема валидации для смены пароля
- */
 export const changePasswordSchema = Joi.object<ChangePasswordInput>({
   oldPassword: Joi.string().required().messages({
     "string.empty": "Текущий пароль обязателен",
@@ -59,9 +53,6 @@ export const changePasswordSchema = Joi.object<ChangePasswordInput>({
   }),
 });
 
-/**
- * Схема валидации для пагинации
- */
 export const paginationSchema = Joi.object({
   page: Joi.number().integer().min(1).default(1).messages({
     "number.min": "Номер страницы должен быть не менее 1",

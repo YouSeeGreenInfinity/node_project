@@ -4,9 +4,7 @@ import { PasswordService } from "./PasswordService";
 import { AuthService } from "./AuthService";
 
 export class UserService {
-  /**
-   * Получение пользователя по ID
-   */
+
   static async getUserById(id: number): Promise<SafeUser | null> {
     const user = await User.findByPk(id);
 
@@ -17,9 +15,6 @@ export class UserService {
     return AuthService.getSafeUser(user);
   }
 
-  /**
-   * Получение пользователя по email
-   */
   static async getUserByEmail(email: string): Promise<SafeUser | null> {
     const user = await User.findOne({ where: { email } });
 
@@ -30,9 +25,6 @@ export class UserService {
     return AuthService.getSafeUser(user);
   }
 
-  /**
-   * Получение списка всех пользователей
-   */
   static async getAllUsers(
     options: {
       page?: number;
@@ -79,9 +71,6 @@ export class UserService {
     };
   }
 
-  /**
-   * Обновление пользователя
-   */
   static async updateUser(
     userId: number,
     updateData: UpdateUserInput
@@ -92,7 +81,6 @@ export class UserService {
       throw new Error("Пользователь не найден");
     }
 
-    // Если обновляется пароль - хешируем его
     if (updateData.password) {
       const passwordValidation = PasswordService.validatePasswordStrength(
         updateData.password
@@ -109,15 +97,11 @@ export class UserService {
       );
     }
 
-    // Обновляем пользователя
     await user.update(updateData);
 
     return AuthService.getSafeUser(user);
   }
 
-  /**
-   * Блокировка/разблокировка пользователя
-   */
   static async toggleUserBlock(
     userId: number,
     isActive: boolean
@@ -128,7 +112,6 @@ export class UserService {
       throw new Error("Пользователь не найден");
     }
 
-    // Админа нельзя заблокировать
     if (user.role === "admin" && !isActive) {
       throw new Error("Нельзя заблокировать администратора");
     }
@@ -138,9 +121,6 @@ export class UserService {
     return AuthService.getSafeUser(user);
   }
 
-  /**
-   * Смена пароля
-   */
   static async changePassword(
     userId: number,
     oldPassword: string,
@@ -152,7 +132,6 @@ export class UserService {
       throw new Error("Пользователь не найден");
     }
 
-    // Проверяем старый пароль
     const isValidPassword = await PasswordService.comparePassword(
       oldPassword,
       user.password
@@ -162,7 +141,6 @@ export class UserService {
       throw new Error("Текущий пароль неверен");
     }
 
-    // Проверяем сложность нового пароля
     const passwordValidation =
       PasswordService.validatePasswordStrength(newPassword);
 
@@ -172,14 +150,10 @@ export class UserService {
       );
     }
 
-    // Хешируем и сохраняем новый пароль
     const hashedPassword = await PasswordService.hashPassword(newPassword);
     await user.update({ password: hashedPassword });
   }
 
-  /**
-   * Удаление пользователя
-   */
   static async deleteUser(userId: number): Promise<void> {
     const user = await User.findByPk(userId);
 
@@ -187,7 +161,6 @@ export class UserService {
       throw new Error("Пользователь не найден");
     }
 
-    // Админа нельзя удалить
     if (user.role === "admin") {
       throw new Error("Нельзя удалить администратора");
     }

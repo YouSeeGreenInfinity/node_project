@@ -1,7 +1,6 @@
 import { DataTypes, Model } from "sequelize";
 import sequelize from "../../config/database";
 
-// Интерфейс для атрибутов пользователя
 interface UserAttributes {
   id: number;
   firstName: string;
@@ -16,13 +15,11 @@ interface UserAttributes {
   updatedAt: Date;
 }
 
-// Интерфейс для создания пользователя
 type UserCreationAttributes = Omit<
   UserAttributes,
   "id" | "createdAt" | "updatedAt"
 >;
 
-// Класс модели
 class User
   extends Model<UserAttributes, UserCreationAttributes>
   implements UserAttributes
@@ -50,7 +47,6 @@ class User
   public updatedAt!: Date;
 }
 
-// Инициализация модели
 User.init(
   {
     id: {

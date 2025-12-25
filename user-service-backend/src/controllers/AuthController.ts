@@ -1,4 +1,3 @@
-// src/controllers/AuthController.ts
 import { Request, Response } from "express";
 import { AuthService } from "../services/AuthService";
 import { JwtService } from "../services/JwtService";
@@ -55,16 +54,14 @@ export class AuthController {
 
   static async getCurrentUser(req: Request, res: Response): Promise<void> {
     try {
-      // Временный кастинг типа пока не работает декларация
-      const authenticatedReq = req as Request & {
-        user?: { id: number }; // Нужен только id
+            const authenticatedReq = req as Request & {
+        user?: { id: number };
       };
 
       if (!authenticatedReq.user) {
         throw new Error("Пользователь не авторизован");
       }
 
-      // Используем UserService вместо AuthService
       const user = await UserService.getUserById(authenticatedReq.user.id);
 
       if (!user) {

@@ -47,16 +47,13 @@ const Navbar: React.FC = () => {
     handleMenuClose();
   };
 
-  // ИСПРАВЛЕННАЯ ФУНКЦИЯ: БЕЗОПАСНОЕ ПОЛУЧЕНИЕ ИНИЦИАЛОВ
   const getInitials = () => {
     if (!user) return '';
-    // Используем опциональную цепочку и fallback для защиты от undefined/null
     const first = user.firstName?.charAt(0) || '';
     const last = user.lastName?.charAt(0) || '';
     return `${first}${last}`.toUpperCase();
   };
 
-  // ИСПРАВЛЕННАЯ ФУНКЦИЯ: БЕЗОПАСНОЕ ПОЛУЧЕНИЕ ИМЕНИ
   const getFullName = () => {
     if (!user) return '';
     const first = user.firstName || '';

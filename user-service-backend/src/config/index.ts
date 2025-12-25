@@ -4,9 +4,9 @@ dotenv.config();
 
 export const config = {
   server: {
-    port: process.env.PORT || 3001, // ← Исправьте порт на 3001
+    port: process.env.PORT || 3001,
     nodeEnv: process.env.NODE_ENV || "development",
-    corsOrigin: "http://localhost:3000", // ← Явно указываем фронтенд
+    corsOrigin: "http://localhost:3000",
   },
   database: {
     host: process.env.DB_HOST || "127.0.0.1",

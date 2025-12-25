@@ -16,7 +16,6 @@ const initialState: UsersState = {
   error: null,
 };
 
-// Вспомогательная функция, чтобы ВЫЖАТЬ строку из любой ошибки
 const getErrorString = (error: any): string => {
   if (typeof error === 'string') return error;
   if (error?.response?.data?.message) return error.response.data.message;
@@ -24,21 +23,17 @@ const getErrorString = (error: any): string => {
   return 'Неизвестная ошибка';
 };
 
-// Асинхронные thunks
 
 export const fetchUsers = createAsyncThunk(
   'users/fetchUsers',
   async (_, { rejectWithValue }) => {
     try {
       const users = await authApi.getUsers();
-      // Проверка формата на случай, если бэк шлет { rows: ... }
       if (!Array.isArray(users) && (users as any).rows) {
           return (users as any).rows;
       }
       return users;
     } catch (error: any) {
-      // ВОТ ЗДЕСЬ БЫЛА ОШИБКА. Мы передавали весь объект error.
-      // Теперь передаем только строку.
       return rejectWithValue(getErrorString(error));
     }
   }
@@ -73,7 +68,6 @@ export const toggleBlockUser = createAsyncThunk(
   async ({ id, isActive }: { id: number; isActive: boolean }, { rejectWithValue }) => {
     try {
       const response = await authApi.toggleBlock(id, isActive);
-      // Если сервер вернул обновленного юзера, берем isActive оттуда, иначе используем отправленное
       const newStatus = response?.isActive ?? isActive;
       return { userId: id, isActive: newStatus };
     } catch (error: any) {
@@ -95,7 +89,6 @@ const usersSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Fetch Users
       .addCase(fetchUsers.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -106,11 +99,9 @@ const usersSlice = createSlice({
       })
       .addCase(fetchUsers.rejected, (state, action) => {
         state.isLoading = false;
-        // Теперь здесь точно будет строка
         state.error = action.payload as string || 'Ошибка загрузки пользователей';
       })
       
-      // Fetch User By ID
       .addCase(fetchUserById.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -124,7 +115,6 @@ const usersSlice = createSlice({
         state.error = action.payload as string;
       })
       
-      // Update User
       .addCase(updateUser.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -141,7 +131,6 @@ const usersSlice = createSlice({
         state.error = action.payload as string;
       })
       
-      // Toggle Block
       .addCase(toggleBlockUser.pending, (state) => {
         state.isLoading = true;
       })

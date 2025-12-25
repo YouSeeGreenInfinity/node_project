@@ -7,9 +7,6 @@ export class JwtService {
 
   private static readonly EXPIRES_IN = config.jwt.expiresIn;
 
-  /**
-   * Генерация JWT токена
-   */
   static generateToken(payload: UserPayload): string {
     return jwt.sign(
       payload,
@@ -21,9 +18,6 @@ export class JwtService {
     );
   }
 
-  /**
-   * Верификация JWT токена
-   */
   static verifyToken(
     token: string,
     ignoreExpiration = false
@@ -40,9 +34,6 @@ export class JwtService {
     }
   }
 
-  /**
-   * Декодирование токена без верификации
-   */
   static decodeToken(token: string): UserPayload | null {
     try {
       return jwt.decode(token) as UserPayload;
@@ -52,9 +43,6 @@ export class JwtService {
     }
   }
 
-  /**
-   * Получение payload из заголовка Authorization
-   */
   static getPayloadFromHeader(
     authHeader: string | undefined
   ): UserPayload | null {

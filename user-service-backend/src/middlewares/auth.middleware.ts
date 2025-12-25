@@ -2,16 +2,12 @@ import { Request, Response, NextFunction } from "express";
 import { JwtService } from "../services/JwtService";
 import { ErrorResponse } from "../types/api.types";
 
-/**
- * Middleware для проверки JWT токена
- */
 export const authenticate = (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    // Получаем токен из заголовка Authorization
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
@@ -24,7 +20,6 @@ export const authenticate = (
       return res.status(401).json(errorResponse);
     }
 
-    // Извлекаем токен из "Bearer <token>"
     const token = authHeader.split(" ")[1];
 
     if (!token) {
@@ -37,7 +32,6 @@ export const authenticate = (
       return res.status(401).json(errorResponse);
     }
 
-    // Верифицируем токен
     const payload = JwtService.verifyToken(token);
 
     if (!payload) {
@@ -50,7 +44,6 @@ export const authenticate = (
       return res.status(401).json(errorResponse);
     }
 
-    // Проверяем активность пользователя
     if (!payload.isActive) {
       const errorResponse: ErrorResponse = {
         success: false,
@@ -61,7 +54,6 @@ export const authenticate = (
       return res.status(403).json(errorResponse);
     }
 
-    // Временный кастинг типа
     const authenticatedReq = req as Request & {
       user?: typeof payload;
       token?: string;
@@ -82,9 +74,6 @@ export const authenticate = (
   }
 };
 
-/**
- * Middleware для проверки роли пользователя
- */
 export const requireRole =
   (...allowedRoles: string[]) =>
   (req: Request, res: Response, next: NextFunction) => {
@@ -103,7 +92,6 @@ export const requireRole =
         return res.status(401).json(errorResponse);
       }
 
-      // Проверяем есть ли у пользователя нужная роль
       if (!allowedRoles.includes(authenticatedReq.user.role)) {
         const errorResponse: ErrorResponse = {
           success: false,
@@ -126,10 +114,6 @@ export const requireRole =
     }
   };
 
-/**
- * Middleware для проверки что пользователь обращается к своему ресурсу
- * Или является администратором
- */
 export const requireOwnershipOrAdmin =
   (paramName = "id") =>
   (req: Request, res: Response, next: NextFunction) => {
@@ -150,12 +134,10 @@ export const requireOwnershipOrAdmin =
 
       const resourceId = parseInt(req.params[paramName], 10);
 
-      // Админы имеют доступ ко всему
       if (authenticatedReq.user.role === "admin") {
         return next();
       }
 
-      // Пользователи имеют доступ только к своим ресурсам
       if (authenticatedReq.user.id !== resourceId) {
         const errorResponse: ErrorResponse = {
           success: false,

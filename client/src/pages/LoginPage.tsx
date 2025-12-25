@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
 import {
   Container,
   Box,
@@ -9,22 +9,24 @@ import {
   Alert,
   CircularProgress,
   Snackbar,
-} from '@mui/material';
-import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { login, clearError, clearSuccess } from '../store/slices/authSlice';
-import LoginForm from '../components/auth/LoginForm';
-import { LoginData } from '../types/user';
+} from "@mui/material";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { login, clearError, clearSuccess } from "../store/slices/authSlice";
+import LoginForm from "../components/auth/LoginForm";
+import { LoginData } from "../types/user";
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { user, isLoading, error, success } = useAppSelector((state) => state.auth);
-  
+  const { user, isLoading, error, success } = useAppSelector(
+    (state) => state.auth
+  );
+
   const [openErrorSnackbar, setOpenErrorSnackbar] = useState(false);
 
   useEffect(() => {
     if (user) {
-      navigate('/profile');
+      navigate("/profile");
     }
   }, [user, navigate]);
 
@@ -52,24 +54,24 @@ const LoginPage: React.FC = () => {
     dispatch(clearError());
   };
 
-  // Вспомогательная функция для безопасного вывода ошибки
   const renderError = (err: any) => {
     if (!err) return null;
-    if (typeof err === 'string') return err;
-    // Если вдруг прилетел объект - превращаем его в строку, чтобы увидеть на экране
+    if (typeof err === "string") return err;
     return JSON.stringify(err?.message || err);
   };
 
   if (isLoading && !error) {
     return (
-      <Box sx={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        minHeight: '100vh',
-        flexDirection: 'column',
-        gap: 2
-      }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+          flexDirection: "column",
+          gap: 2,
+        }}
+      >
         <CircularProgress />
         <Typography variant="body2" color="text.secondary">
           Авторизация...
@@ -83,35 +85,33 @@ const LoginPage: React.FC = () => {
       <Box
         sx={{
           marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
         }}
       >
         <Paper
           elevation={3}
           sx={{
             p: 4,
-            width: '100%',
+            width: "100%",
             borderRadius: 2,
           }}
         >
-          {/* Убрали дублирующий Alert отсюда, так как передаем ошибку прямо в форму */}
-          
           <LoginForm
             onSubmit={handleSubmit}
             isLoading={isLoading}
-            error={renderError(error)} // <--- ВАЖНО: Передаем ошибку!
+            error={renderError(error)}
           />
 
-          <Box sx={{ mt: 3, textAlign: 'center' }}>
+          <Box sx={{ mt: 3, textAlign: "center" }}>
             <Typography variant="body2" color="text.secondary">
-              Еще нет аккаунта?{' '}
+              Еще нет аккаунта?{" "}
               <Link
                 component={RouterLink}
                 to="/register"
                 variant="body2"
-                sx={{ fontWeight: 'medium', textDecoration: 'none' }}
+                sx={{ fontWeight: "medium", textDecoration: "none" }}
                 color="primary"
               >
                 Зарегистрироваться
@@ -119,40 +119,41 @@ const LoginPage: React.FC = () => {
             </Typography>
           </Box>
 
-          <Box sx={{ mt: 2, textAlign: 'center' }}>
+          <Box sx={{ mt: 2, textAlign: "center" }}>
             <Link
               component={RouterLink}
               to="/"
               variant="body2"
               color="text.secondary"
-              sx={{ textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+              sx={{
+                textDecoration: "none",
+                "&:hover": { textDecoration: "underline" },
+              }}
             >
               Вернуться на главную
             </Link>
           </Box>
         </Paper>
 
-        <Box sx={{ mt: 4, textAlign: 'center' }}>
+        <Box sx={{ mt: 4, textAlign: "center" }}>
           <Typography variant="caption" color="text.secondary">
             © {new Date().getFullYear()} User Management System
           </Typography>
         </Box>
       </Box>
 
-      {/* Snackbar для ошибок */}
       <Snackbar
         open={openErrorSnackbar}
         autoHideDuration={6000}
         onClose={handleCloseErrorSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
-        <Alert 
-          onClose={handleCloseErrorSnackbar} 
+        <Alert
+          onClose={handleCloseErrorSnackbar}
           severity="error"
-          sx={{ width: '100%' }}
+          sx={{ width: "100%" }}
         >
-           {/* Тоже используем безопасный рендер */}
-           {renderError(error)}
+          {renderError(error)}
         </Alert>
       </Snackbar>
     </Container>

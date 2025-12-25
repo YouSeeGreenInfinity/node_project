@@ -4,16 +4,10 @@ import { config } from "../config";
 export class PasswordService {
   private static readonly SALT_ROUNDS = config.bcrypt.saltRounds;
 
-  /**
-   * Хеширование пароля
-   */
   static async hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, this.SALT_ROUNDS);
   }
 
-  /**
-   * Проверка пароля
-   */
   static async comparePassword(
     plainPassword: string,
     hashedPassword: string
@@ -21,9 +15,6 @@ export class PasswordService {
     return bcrypt.compare(plainPassword, hashedPassword);
   }
 
-  /**
-   * Проверка сложности пароля
-   */
   static validatePasswordStrength(password: string): {
     isValid: boolean;
     errors: string[];

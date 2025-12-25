@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { validateBody } from "../validators/validate.middleware";
-import { loginSchema, registerSchema } from "../validators/auth.validator"; // Импортируйте registerSchema
+import { loginSchema, registerSchema } from "../validators/auth.validator";
 import { AuthController } from "../controllers/AuthController";
 
 const router = Router();
@@ -55,7 +55,7 @@ const router = Router();
  *         description: Ошибка валидации или email уже используется
  */
 router.post(
-  "/register", // ← ДОБАВЬТЕ ЭТУ СТРОКУ
+  "/register",
   validateBody(registerSchema), // ← И ЭТУ
   AuthController.register // ← И ЭТУ
 );

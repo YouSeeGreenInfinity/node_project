@@ -23,7 +23,6 @@ const GlobalErrorHandler: React.FC = () => {
       return;
     }
     setOpen(false);
-    // Даем анимации закрытия проиграть перед очисткой стейта
     setTimeout(() => {
       dispatch(clearError());
     }, 300);
@@ -31,7 +30,6 @@ const GlobalErrorHandler: React.FC = () => {
 
   if (!error) return null;
 
-  // Безопасное приведение ошибки к строке
   const errorMessage =
     typeof error === "string"
       ? error

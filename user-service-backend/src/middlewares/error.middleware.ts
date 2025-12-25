@@ -1,11 +1,7 @@
-// src/middlewares/error.middleware.ts
 import { Request, Response, NextFunction } from "express";
 import { ErrorResponse, ValidationErrorResponse } from "../types/api.types";
 import { config } from "../config";
 
-/**
- * Кастомный класс для ошибок приложения
- */
 export class AppError extends Error {
   constructor(
     public message: string,
@@ -17,9 +13,6 @@ export class AppError extends Error {
   }
 }
 
-/**
- * Middleware для обработки ошибок валидации
- */
 export const validationErrorHandler = (
   error: any,
   req: Request,
@@ -51,9 +44,6 @@ export const validationErrorHandler = (
   next(error);
 };
 
-/**
- * Middleware для обработки ошибок аутентификации/авторизации
- */
 export const authErrorHandler = (
   error: any,
   req: Request,
@@ -83,16 +73,13 @@ export const authErrorHandler = (
   next(error);
 };
 
-/**
- * Глобальный обработчик ошибок
- */
 export const globalErrorHandler = (
   error: any,
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  // Временный кастинг типа
+
   const authenticatedReq = req as Request & { user?: { id: number } };
 
   console.error("❌ Error:", {
@@ -101,15 +88,13 @@ export const globalErrorHandler = (
     path: req.path,
     method: req.method,
     body: req.body,
-    user: authenticatedReq.user?.id, // Используем кастинг
+    user: authenticatedReq.user?.id,
   });
 
-  // Если уже отправили ответ
   if (res.headersSent) {
     return next(error);
   }
 
-  // Обработка кастомных ошибок AppError
   if (error instanceof AppError) {
     const errorResponse: ErrorResponse = {
       success: false,
@@ -120,7 +105,6 @@ export const globalErrorHandler = (
     return res.status(error.statusCode).json(errorResponse);
   }
 
-  // Обработка обычных ошибок
   const statusCode = error.statusCode || 500;
   const message = error.message || "Internal Server Error";
 
@@ -137,9 +121,6 @@ export const globalErrorHandler = (
   res.status(statusCode).json(errorResponse);
 };
 
-/**
- * Middleware для обработки 404
- */
 export const notFoundHandler = (req: Request, res: Response) => {
   const errorResponse: ErrorResponse = {
     success: false,

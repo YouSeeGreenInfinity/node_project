@@ -1,4 +1,3 @@
-// Базовые типы для пользователя
 export interface BaseUser {
   id: number;
   firstName: string;
@@ -11,11 +10,8 @@ export interface BaseUser {
   updatedAt: Date;
 }
 
-// Пользователь без конфиденциальных данных (для ответов)
 export type SafeUser = Omit<BaseUser, "password">;
-// Уже без пароля
 
-// Для создания пользователя (регистрация)
 export interface CreateUserInput {
   firstName: string;
   lastName: string;
@@ -26,7 +22,6 @@ export interface CreateUserInput {
   role?: "admin" | "user";
 }
 
-// Для обновления пользователя
 export interface UpdateUserInput {
   firstName?: string;
   lastName?: string;
@@ -37,19 +32,16 @@ export interface UpdateUserInput {
   isActive?: boolean;
 }
 
-// Для авторизации (логин)
 export interface LoginInput {
   email: string;
   password: string;
 }
 
-// Для смены пароля
 export interface ChangePasswordInput {
   oldPassword: string;
   newPassword: string;
 }
 
-// Тип для JWT payload
 export interface UserPayload {
   id: number;
   email: string;

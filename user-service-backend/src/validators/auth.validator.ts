@@ -1,10 +1,6 @@
-// src/validators/auth.validator.ts
 import Joi from "joi";
 import { CreateUserInput, LoginInput } from "../types/user.types";
 
-/**
- * Схема валидации для регистрации
- */
 export const registerSchema = Joi.object<CreateUserInput>({
   firstName: Joi.string().min(2).max(50).required().messages({
     "string.min": "Имя должно содержать минимум 2 символа",
@@ -51,9 +47,6 @@ export const registerSchema = Joi.object<CreateUserInput>({
   }),
 });
 
-/**
- * Схема валидации для авторизации
- */
 export const loginSchema = Joi.object<LoginInput>({
   email: Joi.string().email().required().messages({
     "string.email": "Некорректный формат email",

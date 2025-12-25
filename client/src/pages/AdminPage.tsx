@@ -4,7 +4,6 @@ import {
   Typography,
   Alert,
   Snackbar,
-  // CircularProgress, // Не использовался
 } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { fetchUsers, toggleBlockUser } from '../store/slices/usersSlice';
@@ -33,17 +32,15 @@ const AdminPage: React.FC = () => {
 
   const handleBlockUser = async (userId: number) => {
     try {
-      // ИСПРАВЛЕНИЕ: Находим пользователя в стейте, чтобы узнать его текущий статус
       const userToUpdate = users.find(u => u.id === userId);
       
       if (!userToUpdate) {
           throw new Error("Пользователь не найден в списке");
       }
 
-      // Передаем объект { id, isActive } в thunk
       await dispatch(toggleBlockUser({ 
           id: userId, 
-          isActive: !userToUpdate.isActive // Инвертируем текущий статус
+          isActive: !userToUpdate.isActive
       })).unwrap();
 
       setNotification({
